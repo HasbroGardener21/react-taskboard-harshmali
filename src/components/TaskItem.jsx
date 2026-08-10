@@ -6,12 +6,17 @@ function TaskItem({ task }) {
   const { deleteTask, toggleDone, updateTask, moveTask, reorderTasks, projects, tasks } = useApp()
   const [editing, setEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(task.title)
+  const [error, setError] = useState("")
   const navigate = useNavigate()
 
   const handleSave = () => {
-    if (!editTitle.trim() || editTitle.trim().length < 3) return
+    if (!editTitle.trim() || editTitle.trim().length < 3) {
+      setError("Title must be at least 3 characters")
+      return
+    }
     updateTask(task.id, editTitle.trim())
     setEditing(false)
+    setError("")
   }
 
   const handleMoveUp = () => {
@@ -46,13 +51,25 @@ function TaskItem({ task }) {
         checked={task.done}
         onChange={() => toggleDone(task.id)}
       />
-
       {editing ? (
-        <>
-          <input value={editTitle} onChange={e => setEditTitle(e.target.value)} />
-          <button onClick={handleSave}>Save</button>
-          <button onClick={() => setEditing(false)}>Cancel</button>
-        </>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', gap: '4px' }}>
+            <input 
+              value={editTitle} 
+              onChange={e => {
+                setEditTitle(e.target.value)
+                if (error) setError("") // Clear error when typing
+              }} 
+            />
+            <button onClick={handleSave}>Save</button>
+            <button onClick={() => {
+              setEditing(false)
+              setEditTitle(task.title)
+              setError("")
+            }}>Cancel</button>
+          </div>
+          {error && <span style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>{error}</span>}
+        </div>
       ) : (
         <span
           onClick={() => navigate(`/task/${task.id}`)}
@@ -65,7 +82,6 @@ function TaskItem({ task }) {
           {task.title}
         </span>
       )}
-
       <select
         value={task.projectId}
         onChange={e => moveTask(task.id, Number(e.target.value))}
@@ -74,11 +90,10 @@ function TaskItem({ task }) {
           <option key={p.id} value={p.id}>{p.name}</option>
         ))}
       </select>
-
-      <button onClick={handleMoveUp}>↑</button>
-      <button onClick={handleMoveDown}>↓</button>
-      <button onClick={() => setEditing(true)}>✏️</button>
-      <button onClick={() => deleteTask(task.id)}>🗑️</button>
+      <button onClick={handleMoveUp} title="Move Up">↑</button>
+      <button onClick={handleMoveDown} title="Move Down">↓</button>
+      <button onClick={() => setEditing(true)} title="Edit">✎</button>
+      <button onClick={() => deleteTask(task.id)} title="Delete">❌</button>
     </div>
   )
 }
