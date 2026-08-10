@@ -38,14 +38,7 @@ function TaskItem({ task }) {
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      padding: '8px',
-      borderBottom: '1px solid #eee',
-      opacity: task.done ? 0.6 : 1
-    }}>
+    <div className="task-item" style={{ opacity: task.done ? 0.6 : 1 }}>
       <input
         type="checkbox"
         checked={task.done}
@@ -53,47 +46,46 @@ function TaskItem({ task }) {
       />
       {editing ? (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', gap: '4px' }}>
+          <div className="task-edit">
             <input 
               value={editTitle} 
               onChange={e => {
                 setEditTitle(e.target.value)
-                if (error) setError("") // Clear error when typing
+                if (error) setError("")
               }} 
             />
-            <button onClick={handleSave}>Save</button>
-            <button onClick={() => {
+            <button className="edit-save" onClick={handleSave}>Save</button>
+            <button className="edit-cancel" onClick={() => {
               setEditing(false)
               setEditTitle(task.title)
               setError("")
             }}>Cancel</button>
           </div>
-          {error && <span style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>{error}</span>}
+          {error && <span className="error-msg" style={{ marginTop: '4px' }}>{error}</span>}
         </div>
       ) : (
         <span
+          className={`task-title ${task.done ? 'done' : ''}`}
           onClick={() => navigate(`/task/${task.id}`)}
-          style={{
-            flex: 1,
-            cursor: 'pointer',
-            textDecoration: task.done ? 'line-through' : 'none'
-          }}
         >
           {task.title}
         </span>
       )}
-      <select
-        value={task.projectId}
-        onChange={e => moveTask(task.id, Number(e.target.value))}
-      >
-        {projects.map(p => (
-          <option key={p.id} value={p.id}>{p.name}</option>
-        ))}
-      </select>
-      <button onClick={handleMoveUp} title="Move Up">↑</button>
-      <button onClick={handleMoveDown} title="Move Down">↓</button>
-      <button onClick={() => setEditing(true)} title="Edit">✎</button>
-      <button onClick={() => deleteTask(task.id)} title="Delete">❌</button>
+      
+      <div className="task-actions">
+        <select
+          value={task.projectId}
+          onChange={e => moveTask(task.id, Number(e.target.value))}
+        >
+          {projects.map(p => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
+        <button onClick={handleMoveUp} title="Move Up">↑</button>
+        <button onClick={handleMoveDown} title="Move Down">↓</button>
+        <button onClick={() => setEditing(true)} title="Edit">✎</button>
+        <button className="delete-task-btn" onClick={() => deleteTask(task.id)} title="Delete">❌</button>
+      </div>
     </div>
   )
 }

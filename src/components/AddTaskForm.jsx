@@ -17,15 +17,20 @@ function AddTaskForm({ projectId }) {
   }
 
   return (
-    <div style={{ marginBottom: '16px' }}>
-      <input
-        value={title}
-        onChange={e => setTitle(e.target.value)}
-        placeholder="Add a task..."
-        onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-      />
-      <button onClick={handleSubmit}>Add</button>
-      {error && <p style={{ color: 'red', fontSize: '12px' }}>{error}</p>}
+    <div className="add-task-form">
+      <div className="add-task-row">
+        <input
+          value={title}
+          onChange={e => {
+            setTitle(e.target.value)
+            if (error) setError("") // Clear error when typing
+          }}
+          placeholder="Add a task..."
+          onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+        />
+        <button onClick={handleSubmit}>Add</button>
+      </div>
+      {error && <span className="error-msg">{error}</span>}
     </div>
   )
 }

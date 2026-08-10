@@ -4,7 +4,7 @@ import ProjectSidebar from '../components/ProjectSidebar'
 import TaskList from '../components/TaskList'
 import AddTaskForm from '../components/AddTaskForm'
 
-function TaskBoard() {
+function TaskBoard({ toggleTheme, theme }) {
   const [activeProjectId, setActiveProjectId] = useState(1)
   const { projects, tasks } = useApp()
 
@@ -12,14 +12,20 @@ function TaskBoard() {
   const activeProject = projects.find(p => p.id === activeProjectId)
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
+    <div className="board">
       <ProjectSidebar
         activeProjectId={activeProjectId}
         onSelectProject={setActiveProjectId}
+        toggleTheme={toggleTheme}
+        theme={theme}
       />
-      <main style={{ flex: 1, padding: '20px' }}>
-        <h1>{activeProject?.name}</h1>
-        <p>{activeTasks.filter(t => !t.done).length} tasks remaining</p>
+      <main className="main">
+        <div className="main-header">
+          <div className="project-color-dot" style={{ background: activeProject?.color || '#888' }} />
+          <h1>{activeProject?.name}</h1>
+        </div>
+        <p className="task-count">{activeTasks.filter(t => !t.done).length} tasks remaining</p>
+        
         <AddTaskForm projectId={activeProjectId} />
         <TaskList tasks={activeTasks} />
       </main>
