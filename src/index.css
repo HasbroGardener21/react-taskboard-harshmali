@@ -412,12 +412,6 @@ select:focus-visible {
 
   gap: 2px;
 
-  opacity: 0;
-
-  transition: opacity 0.15s ease;
-}
-
-.project-item:hover .project-actions {
   opacity: 1;
 }
 
@@ -963,12 +957,6 @@ button:active {
 
   gap: 4px;
 
-  opacity: 0;
-
-  transition: opacity 0.15s ease;
-}
-
-.task-item:hover .task-actions {
   opacity: 1;
 }
 
