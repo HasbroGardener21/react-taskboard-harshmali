@@ -13,6 +13,19 @@ export function AppProvider({ children }) {
     return saved ? JSON.parse(saved) : []
   })
 
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('theme') || 'dark'
+  })
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark')
+  }
+
   // PERSIST TO LOCALSTORAGE
   useEffect(() => {
     localStorage.setItem('projects', JSON.stringify(projects))
@@ -103,7 +116,7 @@ export function AppProvider({ children }) {
     <AppContext.Provider value={{
       projects, tasks,
       addTask, deleteTask, toggleDone, updateTask, moveTask, reorderTasks,
-      addProject, deleteProject, renameProject
+      addProject, deleteProject, renameProject, theme, toggleTheme
     }}>
       {children}
     </AppContext.Provider>

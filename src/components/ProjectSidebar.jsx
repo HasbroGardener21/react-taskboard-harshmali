@@ -7,8 +7,8 @@ const COLORS = [
   "#888888", "#ffffff"
 ]
 
-function ProjectSidebar({ activeProjectId, onSelectProject, toggleTheme, theme }) {
-  const { projects, addProject, deleteProject, renameProject } = useApp()
+function ProjectSidebar({ activeProjectId, onSelectProject }) {
+  const { projects, addProject, deleteProject, renameProject, theme, toggleTheme } = useApp()
   const [newProjectName, setNewProjectName] = useState("")
   const [newProjectColor, setNewProjectColor] = useState("#4dabf7")
   const [editingId, setEditingId] = useState(null)
@@ -34,15 +34,15 @@ function ProjectSidebar({ activeProjectId, onSelectProject, toggleTheme, theme }
   }
 
   return (
-    // 2. Conditionally apply the 'collapsed' class based on state
     <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
         {!isCollapsed && <h2>Projects</h2>}
         <div className="sidebar-header-actions">
+          {/* 2. Toggle button using context values */}
           <button className="theme-toggle" onClick={toggleTheme}>
             {theme === 'dark' ? '☀️' : '🌙'}
           </button>
-          {/* 3. Add the toggle button your CSS expects */}
+          
           <button 
             className="sidebar-toggle" 
             onClick={() => setIsCollapsed(!isCollapsed)}

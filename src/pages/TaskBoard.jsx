@@ -4,7 +4,7 @@ import ProjectSidebar from '../components/ProjectSidebar'
 import TaskList from '../components/TaskList'
 import AddTaskForm from '../components/AddTaskForm'
 
-function TaskBoard({ toggleTheme, theme }) {
+function TaskBoard() {
   const [activeProjectId, setActiveProjectId] = useState(1)
   const { projects, tasks } = useApp()
 
@@ -16,8 +16,6 @@ function TaskBoard({ toggleTheme, theme }) {
       <ProjectSidebar
         activeProjectId={activeProjectId}
         onSelectProject={setActiveProjectId}
-        toggleTheme={toggleTheme}
-        theme={theme}
       />
       <main className="main">
         <div className="main-header">
