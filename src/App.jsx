@@ -1,18 +1,51 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import { AppProvider } from './context/AppContext'
 import TaskBoard from './pages/TaskBoard'
 import TaskDetails from './pages/TaskDetails'
+import Login from './pages/Login'
+import { useState, useEffect } from 'react'
+
+function AppRoutes() {
+  const { token } = useAuth()
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark')
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark')
+
+  return (
+    <AppProvider token={token}>
+      <Routes>
+        <Route
+          path="/"
+          element={token
+            ? <TaskBoard toggleTheme={toggleTheme} theme={theme} />
+            : <Navigate to="/login" />}
+        />
+        <Route
+          path="/task/:id"
+          element={token ? <TaskDetails /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/login"
+          element={!token ? <Login /> : <Navigate to="/" />}
+        />
+      </Routes>
+    </AppProvider>
+  )
+}
 
 function App() {
   return (
-    <AppProvider>
+    <AuthProvider>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<TaskBoard />} />
-          <Route path="/task/:id" element={<TaskDetails />} />
-        </Routes>
+        <AppRoutes />
       </BrowserRouter>
-    </AppProvider>
+    </AuthProvider>
   )
 }
 
