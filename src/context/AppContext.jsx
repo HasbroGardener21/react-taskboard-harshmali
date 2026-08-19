@@ -1,122 +1,127 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import {
+  fetchTasks, createTaskAPI, updateTaskAPI,
+  toggleCompleteAPI, deleteTaskAPI
+} from '../api/api'
 
 const AppContext = createContext()
 
-export function AppProvider({ children }) {
+export function AppProvider({ children, token }) {
+  const [tasks, setTasks] = useState([])
   const [projects, setProjects] = useState(() => {
     const saved = localStorage.getItem('projects')
-    return saved ? JSON.parse(saved) : [{ id: 1, name: "Inbox" }]
+    return saved ? JSON.parse(saved) : [{ id: 1, name: 'Inbox', color: '#4dabf7' }]
   })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
-  const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem('tasks')
-    return saved ? JSON.parse(saved) : []
-  })
-
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('theme') || 'dark'
-  })
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem('theme', theme)
-  }, [theme])
-
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark')
-  }
-
-  // PERSIST TO LOCALSTORAGE
+  // Persist projects to localStorage (tasks now live in DB)
   useEffect(() => {
     localStorage.setItem('projects', JSON.stringify(projects))
   }, [projects])
 
+  // Fetch tasks from API when token is available
   useEffect(() => {
-    localStorage.setItem('tasks', JSON.stringify(tasks))
-  }, [tasks])
+    if (!token) {
+      setTasks([])
+      return
+    }
 
-  // SEED FROM API ON FIRST LOAD ONLY
-  useEffect(() => {
-    const alreadySeeded = localStorage.getItem('seeded')
-    if (alreadySeeded) return
+    const loadTasks = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const data = await fetchTasks(token)
+        setTasks(data)
+      } catch (err) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-    fetch('https://jsonplaceholder.typicode.com/todos?_limit=10')
-      .then(res => res.json())
-      .then(data => {
-        const seededTasks = data.map(item => ({
-          id: item.id,
-          title: item.title,
-          done: item.completed,
-          projectId: 1
-        }))
-        setTasks(seededTasks)
-        localStorage.setItem('seeded', 'true')
-      })
-      .catch(err => console.error('Failed to fetch seed data:', err))
-  }, [])
+    loadTasks()
+  }, [token])
 
   // TASKS
-  const addTask = (title, projectId) => {
-    const newTask = {
-      id: Date.now(),
-      title,
-      done: false,
-      projectId
+  const addTask = async (title, projectName) => {
+    try {
+      const newTask = await createTaskAPI(token, title, projectName)
+      setTasks(prev => [...prev, newTask])
+    } catch (err) {
+      setError(err.message)
     }
-    setTasks(prev => [...prev, newTask])
   }
 
-  const deleteTask = (id) => {
-    setTasks(prev => prev.filter(t => t.id !== id))
+  const deleteTask = async (id) => {
+    try {
+      await deleteTaskAPI(token, id)
+      setTasks(prev => prev.filter(t => t._id !== id))
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
-  const toggleDone = (id) => {
-    setTasks(prev => prev.map(t =>
-      t.id === id ? { ...t, done: !t.done } : t
-    ))
+  const toggleDone = async (id) => {
+    try {
+      const updated = await toggleCompleteAPI(token, id)
+      setTasks(prev => prev.map(t => t._id === id ? updated : t))
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
-  const updateTask = (id, newTitle) => {
-    setTasks(prev => prev.map(t =>
-      t.id === id ? { ...t, title: newTitle } : t
-    ))
+  const updateTask = async (id, newTitle) => {
+    try {
+      const updated = await updateTaskAPI(token, id, { title: newTitle })
+      setTasks(prev => prev.map(t => t._id === id ? updated : t))
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
-  const moveTask = (taskId, newProjectId) => {
-    setTasks(prev => prev.map(t =>
-      t.id === taskId ? { ...t, projectId: newProjectId } : t
-    ))
+  const moveTask = async (taskId, newProject) => {
+    try {
+      const updated = await updateTaskAPI(token, taskId, { project: newProject })
+      setTasks(prev => prev.map(t => t._id === taskId ? updated : t))
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
   const reorderTasks = (reorderedList) => {
     setTasks(prev => [
-      ...prev.filter(t => t.projectId !== reorderedList[0].projectId),
+      ...prev.filter(t => t.project !== reorderedList[0].project),
       ...reorderedList
     ])
   }
 
-  // PROJECTS
-  const addProject = (name) => {
-    const newProject = { id: Date.now(), name }
-    setProjects(prev => [...prev, newProject])
+  // PROJECTS (still local)
+  const addProject = (name, color = '#888') => {
+    setProjects(prev => [...prev, { id: Date.now(), name, color }])
   }
 
   const deleteProject = (id) => {
+    const project = projects.find(p => p.id === id)
     setProjects(prev => prev.filter(p => p.id !== id))
-    setTasks(prev => prev.filter(t => t.projectId !== id))
+    if (project) {
+      setTasks(prev => prev.filter(t => t.project !== project.name))
+    }
   }
 
   const renameProject = (id, newName) => {
-    setProjects(prev => prev.map(p =>
-      p.id === id ? { ...p, name: newName } : p
-    ))
+    setProjects(prev => prev.map(p => p.id === id ? { ...p, name: newName } : p))
+  }
+
+  const updateProjectColor = (id, color) => {
+    setProjects(prev => prev.map(p => p.id === id ? { ...p, color } : p))
   }
 
   return (
     <AppContext.Provider value={{
-      projects, tasks,
+      projects, tasks, loading, error,
       addTask, deleteTask, toggleDone, updateTask, moveTask, reorderTasks,
-      addProject, deleteProject, renameProject, theme, toggleTheme
+      addProject, deleteProject, renameProject, updateProjectColor
     }}>
       {children}
     </AppContext.Provider>
