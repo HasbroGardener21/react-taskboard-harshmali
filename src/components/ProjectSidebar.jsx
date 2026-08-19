@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../context/AppContext'
+import { useAuth } from '../context/AuthContext'
 
 const COLORS = [
   "#ff6b6b", "#ffa94d", "#ffd43b",
@@ -8,6 +9,7 @@ const COLORS = [
 ]
 
 function ProjectSidebar({ activeProjectId, onSelectProject }) {
+  const { logout, user } = useAuth()
   const { projects, addProject, deleteProject, renameProject, theme, toggleTheme } = useApp()
   const [newProjectName, setNewProjectName] = useState("")
   const [newProjectColor, setNewProjectColor] = useState("#4dabf7")
@@ -127,6 +129,14 @@ function ProjectSidebar({ activeProjectId, onSelectProject }) {
           )}
         </div>
       )}
+      <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+  <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>
+    {user?.email}
+  </p>
+  <button onClick={logout} style={{ width: '100%' }}>
+    Logout
+  </button>
+</div>
     </aside>
   )
 }
