@@ -5,78 +5,72 @@ const getHeaders = (token) => ({
   ...(token && { Authorization: `Bearer ${token}` })
 })
 
-// AUTH
-export const registerUser = async (email, password) => {
-  const res = await fetch(`${BASE_URL}/api/auth/register`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify({ email, password })
-  })
+// Central fetch handler — catches 401 globally
+const apiFetch = async (url, options = {}) => {
+  const res = await fetch(url, options)
+  
+  if (res.status === 401) {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    window.location.href = '/login'
+    return
+  }
+
   const data = await res.json()
-  if (!res.ok) throw new Error(data.message)
+  if (!res.ok) throw new Error(data.message || 'Something went wrong')
   return data
 }
 
-export const loginUser = async (email, password) => {
-  const res = await fetch(`${BASE_URL}/api/auth/login`, {
+// AUTH
+export const registerUser = async (email, password) => {
+  return apiFetch(`${BASE_URL}/api/auth/register`, {
     method: 'POST',
     headers: getHeaders(),
     body: JSON.stringify({ email, password })
   })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.message)
-  return data
+}
+
+export const loginUser = async (email, password) => {
+  return apiFetch(`${BASE_URL}/api/auth/login`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({ email, password })
+  })
 }
 
 // TASKS
 export const fetchTasks = async (token) => {
-  const res = await fetch(`${BASE_URL}/api/tasks`, {
+  return apiFetch(`${BASE_URL}/api/tasks`, {
     headers: getHeaders(token)
   })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.message)
-  return data
 }
 
 export const createTaskAPI = async (token, title, project) => {
-  const res = await fetch(`${BASE_URL}/api/tasks`, {
+  return apiFetch(`${BASE_URL}/api/tasks`, {
     method: 'POST',
     headers: getHeaders(token),
     body: JSON.stringify({ title, project })
   })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.message)
-  return data
 }
-console.log('API BASE URL:', import.meta.env.VITE_API_URL)
 
 export const updateTaskAPI = async (token, id, updates) => {
-  const res = await fetch(`${BASE_URL}/api/tasks/${id}`, {
+  return apiFetch(`${BASE_URL}/api/tasks/${id}`, {
     method: 'PUT',
     headers: getHeaders(token),
     body: JSON.stringify(updates)
   })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.message)
-  return data
 }
 
 export const toggleCompleteAPI = async (token, id) => {
-  const res = await fetch(`${BASE_URL}/api/tasks/${id}/complete`, {
+  return apiFetch(`${BASE_URL}/api/tasks/${id}/complete`, {
     method: 'PATCH',
     headers: getHeaders(token)
   })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.message)
-  return data
 }
 
 export const deleteTaskAPI = async (token, id) => {
-  const res = await fetch(`${BASE_URL}/api/tasks/${id}`, {
+  return apiFetch(`${BASE_URL}/api/tasks/${id}`, {
     method: 'DELETE',
     headers: getHeaders(token)
   })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.message)
-  return data
 }
