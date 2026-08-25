@@ -37,6 +37,9 @@ My goal was to build a clean, maintainable, and highly responsive React applicat
 
 -   **Styling**: I chose to use vanilla CSS with CSS Variables (Custom Properties) to handle styling and theming. This allowed for a highly responsive mobile layout and an effortless Dark/Light mode toggle without the overhead of heavy UI libraries.
 
+-   JWT tokens are stored in localStorage for simplicity. The tradeoff is vulnerability to XSS attacks — an httpOnly cookie would be more secure in production 
+but requires server-side cookie handling.
+
 Screenshots
 --------------
 
