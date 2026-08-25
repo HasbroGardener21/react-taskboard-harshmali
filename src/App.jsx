@@ -7,7 +7,7 @@ import Login from './pages/Login'
 import { useState, useEffect } from 'react'
 
 function AppRoutes() {
-  const { token } = useAuth()
+  const { token, user } = useAuth()
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark')
 
   useEffect(() => {
@@ -18,7 +18,7 @@ function AppRoutes() {
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark')
 
   return (
-    <AppProvider token={token}>
+    <AppProvider token={token} userId={user?.id}>
       <Routes>
         <Route
           path="/"
