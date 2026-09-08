@@ -4,6 +4,7 @@ import { loginUser, registerUser } from '../api/api'
 const AuthContext = createContext()
 
 export function AuthProvider({ children }) {
+  // Keeping 'token' as the state variable name so App.jsx doesn't break
   const [token, setToken] = useState(() => localStorage.getItem('token') || null)
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('user')
@@ -17,9 +18,14 @@ export function AuthProvider({ children }) {
       setAuthLoading(true)
       setAuthError(null)
       const data = await loginUser(email, password)
-      setToken(data.token)
+      
+      // Grab the specific accessToken from your new backend payload
+      setToken(data.accessToken) 
       setUser(data.user)
-      localStorage.setItem('token', data.token)
+      
+      // Save both tokens for your dual-token auth flow
+      localStorage.setItem('token', data.accessToken) 
+      localStorage.setItem('refreshToken', data.refreshToken)
       localStorage.setItem('user', JSON.stringify(data.user))
     } catch (err) {
       setAuthError(err.message)
@@ -33,9 +39,13 @@ export function AuthProvider({ children }) {
       setAuthLoading(true)
       setAuthError(null)
       const data = await registerUser(email, password)
-      setToken(data.token)
+      
+      // Apply the same fix to registration
+      setToken(data.accessToken)
       setUser(data.user)
-      localStorage.setItem('token', data.token)
+      
+      localStorage.setItem('token', data.accessToken)
+      localStorage.setItem('refreshToken', data.refreshToken)
       localStorage.setItem('user', JSON.stringify(data.user))
     } catch (err) {
       setAuthError(err.message)
@@ -48,6 +58,7 @@ export function AuthProvider({ children }) {
     setToken(null)
     setUser(null)
     localStorage.removeItem('token')
+    localStorage.removeItem('refreshToken')
     localStorage.removeItem('user')
   }
 

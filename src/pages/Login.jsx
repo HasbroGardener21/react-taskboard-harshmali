@@ -1,29 +1,46 @@
-import { useState } from 'react'
-import { useAuth } from '../context/AuthContext'
+import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
-  const { login, register, authError, authLoading } = useAuth()
-  const [isRegister, setIsRegister] = useState(false)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const { login, register, authError, authLoading } = useAuth();
+  const [isRegister, setIsRegister] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  
+  // Initialize the navigate function
+  const navigate = useNavigate();
 
-  const handleSubmit = async () => {
-    setError('')
+  const handleSubmit = async (e) => {
+    // Prevent default form behavior if triggered by a form submit
+    if (e) e.preventDefault(); 
+    
+    setError('');
+    
     if (!email || !password) {
-      setError('Email and password required')
-      return
+      setError('Email and password required');
+      return;
     }
     if (password.length < 6) {
-      setError('Password must be at least 6 characters')
-      return
+      setError('Password must be at least 6 characters');
+      return;
     }
-    if (isRegister) {
-      await register(email, password)
-    } else {
-      await login(email, password)
+    
+    try {
+      if (isRegister) {
+        await register(email, password);
+      } else {
+        await login(email, password);
+      }
+      
+      // THE FIX: Once context finishes logging in/registering, change the page!
+      navigate('/'); // Change this to '/dashboard' or whatever your main route is named
+      
+    } catch (err) {
+      console.error("Authentication failed:", err);
     }
-  }
+  };
 
   return (
     <div style={{
@@ -60,12 +77,12 @@ function Login() {
           placeholder="Password"
           value={password}
           onChange={e => setPassword(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+          onKeyDown={e => e.key === 'Enter' && handleSubmit(e)}
           style={{ width: '100%' }}
         />
 
         {(error || authError) && (
-          <p className="error-msg">{error || authError}</p>
+          <p className="error-msg" style={{ color: 'red' }}>{error || authError}</p>
         )}
 
         <button
@@ -88,7 +105,7 @@ function Login() {
         </p>
       </div>
     </div>
-  )
+  );
 }
 
-export default Login
+export default Login;
