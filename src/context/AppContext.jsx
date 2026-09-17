@@ -3,27 +3,42 @@ import {
   fetchTasks, createTaskAPI, updateTaskAPI,
   toggleCompleteAPI, deleteTaskAPI
 } from '../api/api'
+import { useAuth } from './AuthContext'
 
 const AppContext = createContext()
 
-export function AppProvider({ children, token, userId }) {
+export function AppProvider({ children }) {
+  const { token, user } = useAuth()
+  const userId = user?._id || user?.id || user?.email || 'default'
+
   const [tasks, setTasks] = useState([])
   const [projects, setProjects] = useState([{ id: 'inbox', name: 'Inbox', color: '#4dabf7' }])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [actionError, setActionError] = useState(null)
+  
+  // THE LOCK: Prevents overwriting local storage on refresh
+  const [isInitialized, setIsInitialized] = useState(false)
 
-  // Load projects and tasks when user logs in, reset when logs out
+  // 1. LOAD EFFECT
   useEffect(() => {
-    if (!token || !userId) {
+    if (!token || !user) {
       setTasks([])
       setProjects([{ id: 'inbox', name: 'Inbox', color: '#4dabf7' }])
+      setIsInitialized(false)
       return
     }
 
     const key = `projects_${userId}`
     const saved = localStorage.getItem(key)
-    setProjects(saved ? JSON.parse(saved) : [{ id: 'inbox', name: 'Inbox', color: '#4dabf7' }])
+    if (saved) {
+      setProjects(JSON.parse(saved))
+    } else {
+      setProjects([{ id: 'inbox', name: 'Inbox', color: '#4dabf7' }])
+    }
+    
+    // Unlock saving only AFTER we have safely loaded the existing projects
+    setIsInitialized(true)
 
     const loadTasks = async () => {
       try {
@@ -38,18 +53,19 @@ export function AppProvider({ children, token, userId }) {
       }
     }
     loadTasks()
-  }, [token, userId])
+  }, [token, user, userId])
 
-  // Save projects under user-specific key
+  // 2. SAVE EFFECT
   useEffect(() => {
-    if (!userId) return
+    // If we haven't finished loading yet, DO NOT SAVE.
+    if (!user || !isInitialized) return
     localStorage.setItem(`projects_${userId}`, JSON.stringify(projects))
-  }, [projects, userId])
+  }, [projects, user, userId, isInitialized])
 
-  const addTask = async (title, projectName) => {
+  const addTask = async (title, projectName, attachmentUrl) => {
     try {
       setActionError(null)
-      const newTask = await createTaskAPI(token, title, projectName)
+      const newTask = await createTaskAPI(token, title, projectName, attachmentUrl)
       setTasks(prev => [...prev, newTask])
     } catch (err) {
       setActionError(err.message)
