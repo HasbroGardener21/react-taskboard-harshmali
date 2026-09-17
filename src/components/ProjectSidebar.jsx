@@ -122,14 +122,38 @@ function ProjectSidebar({ activeProjectName, onSelectProject, toggleTheme, theme
         </div>
       )}
 
-      <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
-        <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>
-          {user?.email}
-        </p>
-        <button onClick={logout} style={{ width: '100%' }}>
-          Logout
-        </button>
-      </div>
+      {/* THE FIX: Entire bottom section is hidden when collapsed */}
+      {!isCollapsed && (
+        <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>
+            {user?.email}
+          </p>
+
+          {user?.role === 'admin' && (
+            <a
+              href="/admin"
+              style={{
+                display: 'block',
+                textAlign: 'center',
+                backgroundColor: '#2563eb',
+                color: '#ffffff',
+                padding: '8px',
+                borderRadius: '4px',
+                marginBottom: '8px',
+                fontSize: '14px',
+                textDecoration: 'none',
+                fontWeight: '500'
+              }}
+            >
+               Admin Panel
+            </a>
+          )}
+
+          <button onClick={logout} style={{ width: '100%' }}>
+            Logout
+          </button>
+        </div>
+      )}
     </aside>
   )
 }
