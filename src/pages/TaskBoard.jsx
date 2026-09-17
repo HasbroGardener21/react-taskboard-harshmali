@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext'
 import { useAuth } from '../context/AuthContext'
 import ProjectSidebar from '../components/ProjectSidebar'
 import TaskList from '../components/TaskList'
-import AddTaskForm from '../components/AddTaskForm'
+import AddTaskForm from '../components/AddTaskForm' // Make sure this path is correct!
 
 function TaskBoard({ toggleTheme, theme }) {
   const [activeProjectName, setActiveProjectName] = useState('Inbox')
@@ -43,7 +43,10 @@ function TaskBoard({ toggleTheme, theme }) {
         <p className="task-count">
           {activeTasks.filter(t => !t.done).length} tasks remaining
         </p>
+        
+        {/* THIS IS THE WIRING FIX: Rendering your new component instead of the old hardcoded HTML */}
         <AddTaskForm projectName={activeProjectName} />
+        
         <TaskList tasks={activeTasks} />
       </main>
     </div>
