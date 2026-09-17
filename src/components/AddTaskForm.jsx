@@ -1,17 +1,17 @@
 import { useState } from 'react'
 import { useApp } from '../context/AppContext'
 
-function AddTaskForm({ projectId }) {
+function AddTaskForm({ projectName }) {
   const { addTask } = useApp()
   const [title, setTitle] = useState("")
   const [error, setError] = useState("")
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!title.trim() || title.trim().length < 3) {
       setError("Title must be at least 3 characters")
       return
     }
-    addTask(title.trim(), projectId)
+    await addTask(title.trim(), projectName)
     setTitle("")
     setError("")
   }
@@ -21,16 +21,13 @@ function AddTaskForm({ projectId }) {
       <div className="add-task-row">
         <input
           value={title}
-          onChange={e => {
-            setTitle(e.target.value)
-            if (error) setError("") // Clear error when typing
-          }}
+          onChange={e => setTitle(e.target.value)}
           placeholder="Add a task..."
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
         />
         <button onClick={handleSubmit}>Add</button>
       </div>
-      {error && <span className="error-msg">{error}</span>}
+      {error && <p className="error-msg">{error}</p>}
     </div>
   )
 }

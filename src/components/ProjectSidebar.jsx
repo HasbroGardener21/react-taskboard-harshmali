@@ -8,21 +8,18 @@ const COLORS = [
   "#888888", "#ffffff"
 ]
 
-function ProjectSidebar({ activeProjectId, onSelectProject }) {
+function ProjectSidebar({ activeProjectName, onSelectProject, toggleTheme, theme }) {
   const { logout, user } = useAuth()
-  const { projects, addProject, deleteProject, renameProject, theme, toggleTheme } = useApp()
+  const { projects, addProject, deleteProject, renameProject } = useApp()
   const [newProjectName, setNewProjectName] = useState("")
   const [newProjectColor, setNewProjectColor] = useState("#4dabf7")
   const [editingId, setEditingId] = useState(null)
   const [editName, setEditName] = useState("")
   const [showColorPicker, setShowColorPicker] = useState(false)
-  
-  // 1. Add state for the sidebar
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   const handleAdd = () => {
     if (!newProjectName.trim()) return
-    // Note: Assuming addProject context handles color, if not, update AppContext.jsx later
     addProject(newProjectName.trim(), newProjectColor)
     setNewProjectName("")
     setNewProjectColor("#4dabf7")
@@ -40,13 +37,11 @@ function ProjectSidebar({ activeProjectId, onSelectProject }) {
       <div className="sidebar-header">
         {!isCollapsed && <h2>Projects</h2>}
         <div className="sidebar-header-actions">
-          {/* 2. Toggle button using context values */}
           <button className="theme-toggle" onClick={toggleTheme}>
             {theme === 'dark' ? '☀️' : '🌙'}
           </button>
-          
-          <button 
-            className="sidebar-toggle" 
+          <button
+            className="sidebar-toggle"
             onClick={() => setIsCollapsed(!isCollapsed)}
             title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
@@ -55,20 +50,18 @@ function ProjectSidebar({ activeProjectId, onSelectProject }) {
         </div>
       </div>
 
-      {/* 4. Wrap projects in the project-list div for CSS targeting */}
       <div className="project-list">
         {projects.map(p => (
           <div
             key={p.id}
-            className={`project-item ${activeProjectId === p.id ? 'active' : ''}`}
+            className={`project-item ${p.name === activeProjectName ? 'active' : ''}`}
           >
             <div
               className="project-dot"
               style={{ background: p.color || '#888' }}
-              onClick={() => { if(isCollapsed) onSelectProject(p.id) }} 
+              onClick={() => { if (isCollapsed) onSelectProject(p.name) }}
             />
-            
-            {/* 5. Hide text and actions when collapsed */}
+
             {!isCollapsed && (
               <>
                 {editingId === p.id ? (
@@ -77,16 +70,15 @@ function ProjectSidebar({ activeProjectId, onSelectProject }) {
                       value={editName}
                       onChange={e => setEditName(e.target.value)}
                     />
-                    <button onClick={() => handleRename(p.id)}>💾</button>
-                    <button onClick={() => setEditingId(null)}>❌</button>
+                    <button onClick={() => handleRename(p.id)}></button>
+                    <button onClick={() => setEditingId(null)}></button>
                   </div>
                 ) : (
                   <>
-                    <span onClick={() => onSelectProject(p.id)}>{p.name}</span>
-                    {/* 6. Wrap actions in project-actions div so they show on hover */}
+                    <span onClick={() => onSelectProject(p.name)}>{p.name}</span>
                     <div className="project-actions">
                       <button onClick={() => { setEditingId(p.id); setEditName(p.name) }}>✎</button>
-                      {p.id !== 1 && (
+                      {p.id !== 'inbox' && (
                         <button onClick={() => deleteProject(p.id)}>🗑️</button>
                       )}
                     </div>
@@ -113,7 +105,7 @@ function ProjectSidebar({ activeProjectId, onSelectProject }) {
             className="color-picker-toggle"
             onClick={() => setShowColorPicker(!showColorPicker)}
           >
-            {showColorPicker ? 'Hide colors' : '🎨 Pick color'}
+            {showColorPicker ? 'Hide colors' : 'Pick color'}
           </button>
           {showColorPicker && (
             <div className="color-picker-row">
@@ -129,14 +121,15 @@ function ProjectSidebar({ activeProjectId, onSelectProject }) {
           )}
         </div>
       )}
+
       <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
-  <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>
-    {user?.email}
-  </p>
-  <button onClick={logout} style={{ width: '100%' }}>
-    Logout
-  </button>
-</div>
+        <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>
+          {user?.email}
+        </p>
+        <button onClick={logout} style={{ width: '100%' }}>
+          Logout
+        </button>
+      </div>
     </aside>
   )
 }

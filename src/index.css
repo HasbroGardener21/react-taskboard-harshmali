@@ -985,6 +985,10 @@ button:active {
   color: var(--text);
 }
 
+.task-item.editing .task-actions {
+  opacity: 1;
+}
+
 .task-actions select {
   max-width: 120px;
 
