@@ -4,6 +4,7 @@ import { AppProvider } from './context/AppContext'
 import TaskBoard from './pages/TaskBoard'
 import TaskDetails from './pages/TaskDetails'
 import Login from './pages/Login'
+import AdminDashboard from './pages/AdminDashboard'
 import { useState, useEffect } from 'react'
 
 function AppRoutes() {
@@ -28,7 +29,13 @@ function AppRoutes() {
         />
         <Route
           path="/task/:id"
-          element={token ? <TaskDetails /> : <Navigate to="/login" />}
+          element={token ? <TaskDetails /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/admin"
+          element={token && user?.role === 'admin'
+            ? <AdminDashboard />
+            : <Navigate to="/" />}
         />
         <Route
           path="/login"
